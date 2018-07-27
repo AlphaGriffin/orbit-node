@@ -1,17 +1,17 @@
-ag package
-==========
+ag\.orbit package
+=================
 
 Subpackages
 -----------
 
 .. toctree::
 
-    ag.orbit
+    ag.orbit.node
 
 Module contents
 ---------------
 
-.. automodule:: ag
+.. automodule:: ag.orbit
     :members:
     :undoc-members:
     :show-inheritance:
