@@ -11,14 +11,14 @@ class Process():
 
     BCH_TO_SAT_MULTIPLIER = 100000000
 
-    def __init__(self, host='localhost', port=8332, user=None, password=None):
-        url = 'http://'
-        if user is not None:
-            url += user
-            if password is not None:
-                url += ':' + password
-            url += '@'
-        url += '{}:{}'.format(host, port)
+    def __init__(self, url='http://localhost:8332'): # host='localhost', port=8332, user=None, password=None):
+        #url = 'http://'
+        #if user is not None:
+        #    url += user
+        #    if password is not None:
+        #        url += ':' + password
+        #    url += '@'
+        #url += '{}:{}'.format(host, port)
 
         self.api = API()
         if self.api.version.major != 0:

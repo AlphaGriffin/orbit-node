@@ -15,3 +15,6 @@ defined at https://github.com/AlphaGriffin/orbit.
 from ag.orbit.node.__version__ import __version__
 print ("ORBIT Node version %s" % (__version__))
 
+
+FIRST_ORBIT_BLOCK = 540155
+
