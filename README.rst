@@ -7,8 +7,6 @@ ORBIT Node - Validation for Op_Return Bitcoin-Implemented Tokens
 The official website for ORBIT is http://orbit.cash.
 
 .. contents:: Table of Contents
-.. toctree::
-   API Documentation <api/modules>
 
 *"Orbit the moon"*
 
@@ -55,6 +53,7 @@ Dependencies
 - ORBIT API: https://github.com/AlphaGriffin/orbit
 - appdirs: https://github.com/ActiveState/appdirs (`pip install appdirs`)
 - python-bitcoinrpc: https://github.com/jgarzik/python-bitcoinrpc (`pip install python-bitcoinrpc`)
+- *For building documentation (optional):* sphinx and sphinx_rtd_theme (`pip install sphinx sphinx_rtd_theme`)
 
 
 In addition to the above, ORBIT Node requires RPC access to a local or remote Bitcoin Cash Node such as the one provided by Bitcoin ABC (https://www.bitcoinabc.org).
@@ -103,4 +102,11 @@ Using
 ~~~~~
 
 **FIXME**
+
+
+API Documentation
+-----------------
+
+.. toctree::
+   API Documentation <api/modules>
 

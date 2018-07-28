@@ -1,5 +1,6 @@
 # Copyright (C) 2018 Alpha Griffin
 # @%@~LICENSE~@%@
+
 """Validating Node for ORBIT (Bitcoin Cash tokens)
 
 This is a validating node following the ORBIT specification
