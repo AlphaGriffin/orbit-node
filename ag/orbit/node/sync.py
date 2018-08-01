@@ -1,8 +1,10 @@
 # Copyright (C) 2018 Alpha Griffin
 # @%@~LICENSE~@%@
 
-from .db import SyncDB, TokenDB
 from .. import API
+from ..ops import *
+from . import TokenError
+from .db import TokenDB
 
 from bitcoinrpc.authproxy import AuthServiceProxy
 
@@ -24,8 +26,7 @@ class Process():
         if self.api.version.major != 0:
             raise ValueError('this version of the ORBIT API is not supported: {}'.format(self.orbit.version))
 
-        self.rpc = AuthServiceProxy(url)
-        self.sync = SyncDB()
+        self.rpc = AuthServiceProxy(url, timeout=120)
         self.tokens = TokenDB()
 
         self.info = None
@@ -33,7 +34,6 @@ class Process():
 
     def close(self):
         self.tokens.close()
-        self.sync.close()
         #self.rpc.close()
 
     def refresh(self):
@@ -44,8 +44,11 @@ class Process():
         self.info = self.rpc.getblockchaininfo()
         print('last BCH block sync: {}'.format(self.info['blocks']))
 
-        self.last = self.sync.get_last_block()
+        self.last = self.tokens.get_last_block()
         print('last ORBIT block sync: {}'.format(self.last))
+
+        last = self.last if self.last else self.api.genesis - 1
+        print('blocks to sync: {}'.format(self.info['blocks'] - last))
 
         if self.info['blocks'] == prev:
             return False
@@ -85,36 +88,58 @@ class Process():
 
                 if asmhex.startswith('6a'): # OP_RETURN
                     try:
-                        orbit = self.api.parse(bytearray.fromhex(asmhex[4:])) # we skip the next byte too
-                        
-                        if orbit is not None:
-                            print("    ORBIT {}: {}".format(tx['txid'], orbit))
-
-                            if blockrow is None:
-                                blockrow = self.sync.save_block(blockhash, cur)
-
-                            if txrow is None:
-                                txrow = self.sync.save_tx(tx['txid'], blockrow, tx['confirmations'])
-
-                                for txin in tx['vin']:
-                                    self.sync.save_txin(txin['txid'], txrow, txin['scriptSig']['asm'])
-
-                                for txout in tx['vout']:
-                                    script = txout['scriptPubKey']
-                                    try:
-                                        addresses = ','.join(script['addresses'])
-                                    except KeyError:
-                                        addresses = None
-
-                                    self.sync.save_txout(txrow, int(txout['value'] * self.BCH_TO_SAT_MULTIPLIER),
-                                            script['type'], addresses, script['asm'])
+                        # FIXME: proper pushdata op check
+                        orbit = self.api.parse(bytearray.fromhex(asmhex[4:])) # we skip the next byte too (pushdata)
 
                     except ValueError as e:
                         print("    VOID {}: {}".format(tx['txid'], e))
 
-        self.sync.set_last_block(cur)
-        self.sync.commit()
+                    if orbit is not None:
+                        print("    ORBIT @ {}".format(tx['txid']))
+                        print("        Token Address: {}".format(orbit[0]))
+                        print("        {}".format(orbit[1]))
+
+                        if blockrow is None:
+                            blockrow = self.tokens.save_block(blockhash, cur)
+
+                        if txrow is None:
+                            txrow = self.tokens.save_tx(tx['txid'], blockrow, tx['confirmations'])
+
+                            for txin in tx['vin']:
+                                self.tokens.save_txin(txin['txid'], txrow, txin['scriptSig']['hex'])
+
+                            for txout in tx['vout']:
+                                script = txout['scriptPubKey']
+                                try:
+                                    addresses = ','.join(script['addresses'])
+                                except KeyError:
+                                    addresses = None
+
+                                self.tokens.save_txout(txrow, int(txout['value'] * self.BCH_TO_SAT_MULTIPLIER),
+                                        script['type'], addresses, script['hex'])
+
+                        try:
+                            self.op(orbit[0], orbit[1], txrow, blockrow)
+
+                        except TokenError as e:
+                            # note that we don't rollback the sql transaction; we might want to re-evaluate the data later
+                            print("     !--VOIDED: {}".format(e))
+
+        self.tokens.set_last_block(cur)
+        self.tokens.commit()
         self.last = cur
 
         return cur
+
+    def op(self, address, op, txrow, blockrow):
+        if op.admin():
+            if not self.tokens.has_key_for(txrow, address):
+                raise TokenError("No proof of ownership for admin operation in transaction")
+
+        if isinstance(op, create.Create):
+            self.tokens.token_create(address, txrow, blockrow,
+                    op.supply, op.decimals, op.symbol, op.name, op.main_uri, op.image_uri)
+
+        else:
+            raise ValueError("Unsupported token operation: {}".format(type(op)))
 

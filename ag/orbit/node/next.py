@@ -11,6 +11,7 @@ def run(args):
     if args is not None and len(args) > 0:
         raise ValueError("Not expecting any arguments")
 
+    print()
     print('Sync next block...')
     print()
 

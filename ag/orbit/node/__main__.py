@@ -1,6 +1,11 @@
 # Copyright (C) 2018 Alpha Griffin
 # @%@~LICENSE~@%@
 
+from ..command import invoke
+
+from sys import argv, exit
+from contextlib import suppress
+
 
 CALL = 'orbit-node'
 
@@ -17,8 +22,6 @@ def usage():
     #print("   daemon        - Run continuously processing all blocks")
     print()
 
-from sys import argv, exit
-from contextlib import suppress
 
 with suppress(KeyboardInterrupt):
     args = argv[1:]
@@ -34,60 +37,20 @@ with suppress(KeyboardInterrupt):
         usage()
 
     elif cmd == 'rpc':
-        if args is None or len(args) != 1:
-            print()
-            print("{} {}: Expecting exactly 1 argument".format(CALL, cmd))
-            exit(2)
-
         from .config import set_rpc_url
-        print()
-        set_rpc_url(args[0])
+        invoke(CALL, cmd, 2, set_rpc_url, args, 1, 1, True)
 
     elif cmd == 'info':
-        if args is not None:
-            print()
-            print("{} {}: Not expecting any arguments".format(CALL, cmd))
-            exit(3)
-
         from .info import run
-        print()
-        try:
-            run(args)
-        except ValueError as e:
-            print()
-            print('{} {}: {}'.format(CALL, cmd, e))
-            exit(3)
+        invoke(CALL, cmd, 3, run, args)
 
     elif cmd == 'next':
-        if args is not None:
-            print()
-            print("{} {}: Not expecting any arguments".format(CALL, cmd))
-            exit(4)
-
         from .next import run
-        print()
-        try:
-            run(args)
-        except ValueError as e:
-            print()
-            print('{} {}: {}'.format(CALL, cmd, e))
-            exit(4)
+        invoke(CALL, cmd, 4, run, args)
 
     elif cmd == 'all':
-        if args is not None:
-            print()
-            print("{} {}: Not expecting any arguments".format(CALL, cmd))
-            exit(5)
-
         from .all import run
-        print()
-        try:
-            run(args)
-        except ValueError as e:
-            print()
-            print('{} {}: {}'.format(CALL, cmd, e))
-            exit(5)
-
+        invoke(CALL, cmd, 5, run, args)
 
     #elif cmd == 'daemon':
     #    if args is not None:

@@ -33,8 +33,7 @@ REQUIRE = [                             # package dependencies
             #'ag.logging'
             'ag.orbit(>=0,<1)',
             'appdirs',
-            'python-bitcoinrpc',
-            'sphinx_rtd_theme'              # for building documentation
+            'python-bitcoinrpc'
           ]
 DESC    = 'Validating node for ORBIT (Bitcoin Cash tokens)'
 TAGS    = 'utilities'                   # space-separated list of keywords

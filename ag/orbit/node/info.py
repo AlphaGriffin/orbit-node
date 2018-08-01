@@ -3,7 +3,7 @@
 # Copyright (C) 2018 Alpha Griffin
 # @%@~LICENSE~@%@
 
-from ag.orbit.node import FIRST_ORBIT_BLOCK
+from ag.orbit import API
 from ag.orbit.node.config import get_rpc_url
 from ag.orbit.node.db import SyncDB
 
@@ -14,9 +14,12 @@ def run(args):
     if args is not None and len(args) > 0:
         raise ValueError("Not expecting any arguments")
 
+    api = API()
+
+    print()
     print("Collecting node information...")
     print()
-    print("    ORBIT genesis block: {}".format(FIRST_ORBIT_BLOCK))
+    print("    ORBIT genesis block: {}".format(api.genesis))
 
     try:
         rpc = AuthServiceProxy(get_rpc_url())
@@ -34,7 +37,7 @@ def run(args):
     print("    Last completed block: {}".format(completed))
 
     diff = known - completed
-    print("    Difference: {}".format(diff))
+    print("    Blocks to complete: {}".format(diff))
 
     pruned = info['pruned']
     print("    Pruned? {}".format(pruned))
@@ -49,6 +52,9 @@ def run(args):
 
     last = sync.get_last_block()
     print('    Last block sync: {}'.format(last))
+
+    if not last:
+        last = api.genesis - 1
 
     diff = completed - last
     print('    Blocks to sync: {}'.format(diff))
