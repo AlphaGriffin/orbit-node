@@ -5,7 +5,7 @@
 
 from ag.orbit import API
 from ag.orbit.node.config import get_rpc_url
-from ag.orbit.node.db import SyncDB
+from ag.orbit.node.db import TokenDB
 
 from bitcoinrpc.authproxy import AuthServiceProxy
 
@@ -48,7 +48,7 @@ def run(args):
 
     print()
     print('ORBIT node database')
-    sync = SyncDB()
+    sync = TokenDB()
 
     last = sync.get_last_block()
     print('    Last block sync: {}'.format(last))

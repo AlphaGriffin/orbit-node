@@ -67,7 +67,7 @@ class Process():
 
         print('processing block number {}'.format(cur))
 
-        # FIXME check confirmations
+        # FIXME check confirmations?
 
         blockhash = self.rpc.getblockhash(cur)
         block = self.rpc.getblock(blockhash)
@@ -88,7 +88,7 @@ class Process():
 
                 if asmhex.startswith('6a'): # OP_RETURN
                     try:
-                        # FIXME: proper pushdata op check
+                        # FIXME: proper pushdata op check (future-proofing)
                         orbit = self.api.parse(bytearray.fromhex(asmhex[4:])) # we skip the next byte too (pushdata)
 
                     except ValueError as e:
@@ -132,13 +132,26 @@ class Process():
         return cur
 
     def op(self, address, op, txrow, blockrow):
-        if op.admin():
-            if not self.tokens.has_key_for(txrow, address):
-                raise TokenError("No proof of ownership for admin operation in transaction")
+        signer_address = self.tokens.get_signer_address(txrow)
+
+        if not signer_address:
+            raise ValueError("Unable to determine signer's address from transaction inputs")
+
+        if op.admin() == True:
+            if signer_address != address:
+                raise TokenError("Operation requires admin but no proof of ownership for token address in transaction")
+
+        elif op.admin() == False:
+            if signer_address == address:
+                raise TokenError("Operation may not be used by admin but transaction indicates proof of ownership for token address")
 
         if isinstance(op, create.Create):
             self.tokens.token_create(address, txrow, blockrow,
                     op.supply, op.decimals, op.symbol, op.name, op.main_uri, op.image_uri)
+
+        elif isinstance(op, transfer.Transfer):
+            self.tokens.token_transfer(address, txrow, blockrow,
+                    signer_address, op.to, op.units)
 
         else:
             raise ValueError("Unsupported token operation: {}".format(type(op)))

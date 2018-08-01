@@ -31,7 +31,7 @@ NAME    = 'node'                        # should match source package name in NS
 COMMAND = 'orbit-node'                  # command name may be different than package name
 REQUIRE = [                             # package dependencies
             #'ag.logging'
-            'ag.orbit(>=0,<1)',
+            'ag.orbit(>=0.4,<1)',
             'appdirs',
             'python-bitcoinrpc'
           ]

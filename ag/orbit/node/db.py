@@ -72,15 +72,16 @@ class TokenDB:
                             address TEXT NOT NULL,
                             token INTEGER NOT NULL,
                             updated INTEGER NOT NULL,
-                            amount INTEGER NOT NULL,
+                            units INTEGER NOT NULL,
                             PRIMARY KEY (address, token)
                         )''')
 
+        # TODO: will need to remove primary key from tx if we ever support multiple transfers in one transaction
         conn.execute('''CREATE TABLE IF NOT EXISTS transfer (
-                            tx INTEGER NOT NULL,
+                            tx INTEGER NOT NULL PRIMARY KEY,
                             addr_from TEXT NOT NULL,
                             addr_to TEXT NOT NULL,
-                            amount INTEGER
+                            units INTEGER
                         )''')
 
         self.conn = conn
@@ -150,8 +151,9 @@ class TokenDB:
                           (tx, value, stype, addresses, asmhex))
         return cursor.lastrowid
 
-    def has_key_for(self, txrow, address):
+    def get_signer_address(self, txrow):
         txins = self.conn.execute('''SELECT asmhex FROM txin WHERE tx = ?''', (txrow,)).fetchall()
+        address = None
 
         for txin in txins:
             asmhex = txin[0]
@@ -162,11 +164,13 @@ class TokenDB:
             pubkey = asm[sig_size + 2 : sig_size + pubkey_size + 2]
             pubkey_address = public_key_to_address(pubkey)
 
-            if pubkey_address == address:
-                # note that we only check for a single match... should we check them all instead?
-                return True
+            if not address:
+                address = pubkey_address
 
-        return False
+            elif address != pubkey_address:
+                raise ValueError("Multiple signer keys are present in the transaction inputs")
+
+        return address
 
     def token_create(self, address, tx, block, supply, decimals, symbol, name=None, main_uri=None, image_uri=None):
         cursor = self.conn.cursor()
@@ -182,9 +186,65 @@ class TokenDB:
 
         # no try/except here... it's a critical error to be able to insert a token yet already have a blance for it
         cursor.execute('''INSERT INTO balance
-                          (address, token, updated, amount)
+                          (address, token, updated, units)
                           VALUES (?, ?, ?, ?)''',
                           (address, tokenrow, block, supply))
 
         return tokenrow
+
+    def token_transfer(self, address, tx, block, from_address, to_address, units):
+        cursor = self.conn.cursor()
+
+        # get token
+        tokenrow = cursor.execute('''SELECT rowid FROM token WHERE address = ?''', (address,)).fetchone()
+
+        if tokenrow is None:
+            raise TokenError("No token defined at the specified address")
+        tokenrow = tokenrow[0]
+
+        # get source balance
+        balance = cursor.execute('''SELECT units FROM balance
+                                    WHERE token = ? AND address = ?''',
+                                    (tokenrow, from_address)).fetchone()
+
+        if balance is None:
+            raise TokenError("User has no balance for this token")
+        balance = balance[0]
+
+        if balance < units:
+            raise TokenError("Insufficient balance for this transfer")
+
+        # update source balance
+        balance -= units
+        cursor.execute('''UPDATE balance
+                          SET units = ?, updated = ?
+                          WHERE token = ? AND address = ?''',
+                          (balance, block, tokenrow, from_address))
+
+        # get destination balance
+        balance = cursor.execute('''SELECT units FROM balance
+                                    WHERE token = ? AND address = ?''',
+                                    (tokenrow, to_address)).fetchone()
+
+        # update destination balance
+        if balance is None:
+            cursor.execute('''INSERT INTO balance
+                              (address, token, updated, units)
+                              VALUES (?, ?, ?, ?)''',
+                              (to_address, tokenrow, block, units))
+
+        else:
+            balance = balance[0] + units
+            cursor.execute('''UPDATE balance
+                              SET units = ?, updated = ?
+                              WHERE token = ? AND address = ?''',
+                              (balance, block, tokenrow, to_address))
+ 
+        # register transfer event
+        cursor.execute('''INSERT INTO transfer
+                          (tx, addr_from, addr_to, units)
+                          VALUES (?, ?, ?, ?)''',
+                          (tx, from_address, to_address, units))
+
+        return cursor.lastrowid
 

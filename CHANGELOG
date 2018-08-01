@@ -1,6 +1,8 @@
 Copyright (C) 2018 Alpha Griffin
 @%@~LICENSE~@%@
 
+saw_080118_1 - Now supporting token transfers.
+
 saw_073118_1 - Updated for API version 0.3. Now validates address ownership for token events.
 
 saw_072818_1 - Implement some commands.
