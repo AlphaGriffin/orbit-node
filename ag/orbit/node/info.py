@@ -19,7 +19,7 @@ def run(args):
     print()
     print("Collecting node information...")
     print()
-    print("    ORBIT genesis block: {}".format(api.genesis))
+    print("    ORBIT launch block: {}".format(api.launched))
 
     try:
         rpc = AuthServiceProxy(get_rpc_url())

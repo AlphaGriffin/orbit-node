@@ -1,6 +1,10 @@
 Copyright (C) 2018 Alpha Griffin
 @%@~LICENSE~@%@
 
+saw_080718_1 - Add support for token crowd-sale/faucet advertisements and registrations (TESTING
+               REQUIRED). Break transaction processing into smaller batches while communicating
+               with the BCH node. Add a hashing algorithm for future node consensus checks.
+
 saw_080118_1 - Now supporting token transfers.
 
 saw_073118_1 - Updated for API version 0.3. Now validates address ownership for token events.

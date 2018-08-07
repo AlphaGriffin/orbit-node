@@ -1,18 +1,19 @@
-================================================================
+################################################################
 ORBIT Node - Validation for Op_Return Bitcoin-Implemented Tokens
-================================================================
+################################################################
 
 **A node for processing and validating tokens on Bitcoin Cash implementing the ORBIT standard.**
 
 The official website for ORBIT is http://orbit.cash.
 
 .. contents:: Table of Contents
+   :depth: 2
+   :local:
 
-*"Orbit the moon"*
 
-
+************
 Introduction
-------------
+************
 
 An ORBIT Node is a program that processes ORBIT-related information found on the Bitcoin Cash blockchain. It works in conjuction with an existing BCH Node (such as the Bitcoin-ABC bitcoind program) to review transactions containing OP_RETURN data and determine if they are valid ORBIT transactions and compute current balances for ORBIT tokens. A small database is utilized to track the verified ORBIT events and maintain balance information. Through a socket RPC interface, the ORBIT Node may be queried to retrieve token balances and history.
 
@@ -20,7 +21,7 @@ ORBIT Node is open source and licensed under the MIT license. See the `LICENSE <
 
 
 The ORBIT Ecosystem
-~~~~~~~~~~~~~~~~~~~
+===================
 
 ORBIT is a specification for simple, fungible tokens implemented by utilizing OP_RETURN for the storage of token events on the Bitcoin Cash blockchain. No changes to the Bitcoin Cash protocol or nodes are required. However, wallets may wish to incorporate this token standard in order to allow the user to easily take account of and interact with tokens that adhere to this ORBIT standard.
 
@@ -32,35 +33,62 @@ The following projects, when used in conjunction with ORBIT Node, complete a ful
 - ORBIT Web: https://github.com/AlphaGriffin/orbit-web
 
 
+*************
 Specification
--------------
+*************
 
 The ORBIT repository at https://github.com/AlphaGriffin/orbit defines the official and complete specification for ORBIT. 
 
 *The current specification version is: 0 (beta testing). Version 0 is reserved and should be used for all testing.*
 
 
+
+************
+Contributing
+************
+
+Your help is appreciated! Alpha Griffin is a small team focused on developing new technology projects. If you have questions or comments or would like to contribute to the ORBIT node or ecosystem in any way, please feel free to contact us. You may submit issues or pull requests directly on GitHub or communicate with the team members at the following locations:
+
+- https://gitter.im/AlphaGriffin
+- https://alphagriffintrade.slack.com
+
+Have a suggestion or request? Let us know!
+
+
+To-Do List
+==========
+
+There are a number of tasks already identified on the `To-Do list <TODO>`_ that could use your help (included here in generated documentation).
+
+.. include:: TODO
+
+
+
+**********
 ORBIT Node
-----------
+**********
 
 This ORBIT Node is written in Python.
 
+.. toctree::
+   API Documentation <api/modules>
+
 
 Dependencies
-~~~~~~~~~~~~
+============
 
 - Python 3
 - ORBIT API: https://github.com/AlphaGriffin/orbit
-- appdirs: https://github.com/ActiveState/appdirs (`pip install appdirs`)
-- python-bitcoinrpc: https://github.com/jgarzik/python-bitcoinrpc (`pip install python-bitcoinrpc`)
-- *For building documentation (optional):* sphinx and sphinx_rtd_theme (`pip install sphinx sphinx_rtd_theme`)
+- appdirs: https://github.com/ActiveState/appdirs (``pip install appdirs``)
+- python-bitcoinrpc: https://github.com/jgarzik/python-bitcoinrpc (``pip install python-bitcoinrpc``)
+- *For building documentation (optional):* sphinx and sphinx_rtd_theme (``pip install sphinx sphinx_rtd_theme``)
 
 
 In addition to the above, ORBIT Node requires RPC access to a local or remote Bitcoin Cash Node such as the one provided by Bitcoin ABC (https://www.bitcoinabc.org).
 
 
 Build Overview
-~~~~~~~~~~~~~~
+==============
 
 Both a Makefile and setup.py are provided and used. The setup.py uses Python's standard setuptools package and you can call this script directly to do the basic Python tasks such as creating a wheel, etc.
 
@@ -89,7 +117,7 @@ To clean up all the common generated files from your project folder::
 
 
 Installing
-~~~~~~~~~~
+==========
 
 To install this project to the local system::
 
@@ -99,14 +127,21 @@ Note that you may need superuser permissions to perform the above step.
 
 
 Using
-~~~~~
+=====
 
 **FIXME**
 
 
-API Documentation
------------------
 
-.. toctree::
-   API Documentation <api/modules>
+*******
+History
+*******
+
+All changes are tracked in the `CHANGELOG <CHANGELOG>`_ file.
+
+.. include:: CHANGELOG
+
+----
+
+*"Orbit the moon"*
 

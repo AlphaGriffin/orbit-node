@@ -81,7 +81,7 @@ install:
 
 
 apidoc:
-	sphinx-apidoc ag -o api
+	sphinx-apidoc --module-first ag -o api
 
 apidoc_clean:
 	rm -rf api
@@ -99,6 +99,8 @@ docs_clean:
 
 html:
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(DOCDIR)/html
+	cp CHANGELOG $(DOCDIR)/html
+	cp LICENSE $(DOCDIR)/html
 	@echo
 	@echo "Build finished. The HTML pages are in $(DOCDIR)/html."
 
