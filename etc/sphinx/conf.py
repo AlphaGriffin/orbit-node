@@ -280,12 +280,14 @@ latex_documents = [
 
 # One entry per manual page. List of tuples
 # (source start file, name, description, authors, manual section).
-man_pages = [
-    (master_doc, COMMAND, 'Command for ' + NS + '.' + NAME + ' API',
-     [author], 1),
-    ('api/modules', NS + '.' + NAME, 'API Documentation',
-     [author], 3)
-]
+man_pages = []
+if COMMAND:
+    man_pages.append(
+            (master_doc, COMMAND, 'Command for ' + NS + '.' + NAME + ' API',
+                [author], 1))
+man_pages.append(
+        ('api/modules', NS + '.' + NAME, 'API Documentation',
+            [author], 3))
 
 # If true, show URL addresses after external links.
 #man_show_urls = False

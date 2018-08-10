@@ -70,7 +70,6 @@ run:
 
 install:
 	./setup.py install
-	install -pv orbit-node /usr/local/bin
 	if [ -d "doc/man" ]; then \
 		install -d /usr/local/share/man/man1; \
 		cp -r doc/man/*.1 /usr/local/share/man/man1/; \

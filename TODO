@@ -1,10 +1,8 @@
 To-do list for ORBIT Node:
 
 - finish API documentation
-- generated docs on website (doc.orbit.cash)
 - node to node communication and hash check (consensus)
 - handling node upgrades (hashes will be different and consensus will fail)
-- node socket comms for wallets to connect to
 - test cases
 - improved db indexes
 

@@ -1,6 +1,8 @@
 Copyright (C) 2018 Alpha Griffin
 @%@~LICENSE~@%@
 
+saw_081018_1 - Add continuous daemon operation and web API.
+
 saw_080718_1 - Add support for token crowd-sale/faucet advertisements and registrations (TESTING
                REQUIRED). Break transaction processing into smaller batches while communicating
                with the BCH node. Add a hashing algorithm for future node consensus checks.

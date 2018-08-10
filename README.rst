@@ -2,6 +2,10 @@
 ORBIT Node - Validation for Op_Return Bitcoin-Implemented Tokens
 ################################################################
 
+.. image:: https://badges.gitter.im/AlphaGriffin/orbit.svg
+   :alt: Join the chat at https://gitter.im/AlphaGriffin/orbit
+   :target: https://gitter.im/AlphaGriffin/orbit?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge
+
 **A node for processing and validating tokens on Bitcoin Cash implementing the ORBIT standard.**
 
 The official website for ORBIT is http://orbit.cash.
@@ -61,6 +65,7 @@ To-Do List
 There are a number of tasks already identified on the `To-Do list <TODO>`_ that could use your help (included here in generated documentation).
 
 .. include:: TODO
+   :literal:
 
 
 
@@ -78,9 +83,10 @@ Dependencies
 ============
 
 - Python 3
-- ORBIT API: https://github.com/AlphaGriffin/orbit
+- ORBIT API: https://github.com/AlphaGriffin/orbit (``pip install git+https://github.com/AlphaGriffin/orbit``)
 - appdirs: https://github.com/ActiveState/appdirs (``pip install appdirs``)
 - python-bitcoinrpc: https://github.com/jgarzik/python-bitcoinrpc (``pip install python-bitcoinrpc``)
+- Flask (``pip install flask``)
 - *For building documentation (optional):* sphinx and sphinx_rtd_theme (``pip install sphinx sphinx_rtd_theme``)
 
 
@@ -140,6 +146,7 @@ History
 All changes are tracked in the `CHANGELOG <CHANGELOG>`_ file.
 
 .. include:: CHANGELOG
+   :literal:
 
 ----
 

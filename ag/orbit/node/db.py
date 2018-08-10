@@ -12,8 +12,9 @@ from hashlib import sha256
 
 class TokenDB:
 
-    def __init__(self):
-        conn = sqlite3.connect(path.join(config.dir, 'tokens.db'), isolation_level='EXCLUSIVE')
+    def __init__(self, auto_commit=True):
+        isolation = 'EXCLUSIVE' if not auto_commit else None
+        conn = sqlite3.connect(path.join(config.dir, 'tokens.db'), isolation_level=isolation)
 
         conn.execute('''CREATE TABLE IF NOT EXISTS status (
                             key TEXT NOT NULL PRIMARY KEY,
@@ -126,24 +127,25 @@ class TokenDB:
                             claimed INTEGER NOT NULL
                         )''')
 
-        self.conn = conn
         keys = conn.execute('''SELECT key FROM status''').fetchall()
-        self._init_status(keys, 'height')
+        self._init_status(conn, keys, 'height')
 
         conn.commit()
+        self.conn = conn
+
+    @classmethod
+    def _init_status(self, conn, keys, key):
+        for k in keys:
+            if k[0] == key:
+                return
+
+        conn.execute('''INSERT INTO status (key) VALUES (?)''', (key,))
 
     def commit(self):
         self.conn.commit()
 
     def close(self):
         self.conn.close()
-
-    def _init_status(self, keys, key):
-        for k in keys:
-            if k[0] == key:
-                return
-
-        self.conn.execute('''INSERT INTO status (key) VALUES (?)''', (key,))
 
     def _set_status(self, key, value):
         self.conn.execute('''UPDATE status SET value = ? WHERE key = ?''', (value, key))
@@ -776,6 +778,21 @@ class TokenDB:
                                       SET updated = ?, available = available + ?
                                       WHERE token = ? AND address = ?''',
                                       (blockrow, make_available, advertisement[2], advertisement[3]))
+
+    def get_user_tokens(self, address):
+        return [{
+            "address": row[0],
+            "symbol": row[1],
+            "decimals": row[2],
+            "name": row[3],
+            "units": row[4],
+            "available": row[5]
+            } for row in self.conn.execute('''
+                SELECT t.address, t.symbol, t.decimals, t.name, b.units, b.available
+                FROM balance b
+                LEFT JOIN token t ON t.rowid = b.token
+                WHERE b.address = ?''',
+                (address,)).fetchall()]
 
     def hash(self, blockrow):
         cursor = self.conn.cursor()

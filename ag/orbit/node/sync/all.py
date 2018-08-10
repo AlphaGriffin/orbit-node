@@ -3,6 +3,7 @@
 # Copyright (C) 2018 Alpha Griffin
 # @%@~LICENSE~@%@
 
+from ag.orbit.command import main
 from ag.orbit.node.config import get_rpc_url
 from ag.orbit.node.sync import Process
 
@@ -32,10 +33,5 @@ def run(args):
 
 
 if __name__ == '__main__':
-    from contextlib import suppress
-    from sys import argv
-
-    with suppress(KeyboardInterrupt):
-        print()
-        run(argv[1:])
+    main(run)
 

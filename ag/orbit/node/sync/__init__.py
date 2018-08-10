@@ -1,19 +1,21 @@
 # Copyright (C) 2018 Alpha Griffin
 # @%@~LICENSE~@%@
 
-from .. import API
-from ..ops import Abstract, allocation, advertisement
-from . import TokenError
-from .db import TokenDB
+from ... import API
+from ...ops import Abstract, allocation, advertisement
+from .. import TokenError
+from ..db import TokenDB
 
 from bitcoinrpc.authproxy import AuthServiceProxy
+
+from sys import stdout
 
 
 class Process():
 
     BCH_TO_SAT_MULTIPLIER = 100000000
 
-    def __init__(self, url='http://localhost:8332'): # host='localhost', port=8332, user=None, password=None):
+    def __init__(self, url='http://localhost:8332', out=stdout): # host='localhost', port=8332, user=None, password=None):
         #url = 'http://'
         #if user is not None:
         #    url += user
@@ -22,15 +24,16 @@ class Process():
         #    url += '@'
         #url += '{}:{}'.format(host, port)
 
+        self.out = out
+
         self.api = API()
         if self.api.version.major != 0:
             raise ValueError('this version of the ORBIT API is not supported: {}'.format(self.orbit.version))
 
         self.rpc = AuthServiceProxy(url, timeout=480)
-        self.tokens = TokenDB()
+        self.tokens = TokenDB(auto_commit=False)
 
         self.info = None
-        self.refresh()
 
     def close(self):
         self.tokens.close()
@@ -42,34 +45,75 @@ class Process():
             prev = self.info['blocks']
 
         self.info = self.rpc.getblockchaininfo()
-        print('last BCH block sync: {}'.format(self.info['blocks']))
+        if self.out: print('last BCH block sync: {}'.format(self.info['blocks']), file=self.out)
 
         self.last = self.tokens.get_last_block()
-        print('last ORBIT block sync: {}'.format(self.last))
+        if self.out: print('last ORBIT block sync: {}'.format(self.last), file=self.out)
 
         last = self.last if self.last else self.api.launched - 1
-        print('blocks to sync: {}'.format(self.info['blocks'] - last))
+        if self.out: print('blocks to sync: {}'.format(self.info['blocks'] - last), file=self.out)
 
         if self.info['blocks'] == prev:
             return False
         else:
             return True
 
+    def get_info(self):
+        if self.out: print("Collecting node information...", file=self.out)
+
+        if self.out: print(file=self.out)
+        if self.out: print("    ORBIT launch block: {}".format(self.api.launched), file=self.out)
+
+        if self.out: print(file=self.out)
+        if self.out: print('BCH node', file=self.out)
+        info = self.rpc.getblockchaininfo()
+
+        known = info['headers']
+        if self.out: print("    Last known block: {}".format(known), file=self.out)
+
+        completed = info['blocks']
+        if self.out: print("    Last completed block: {}".format(completed), file=self.out)
+
+        diff = known - completed
+        if self.out: print("    Blocks to complete: {}".format(diff), file=self.out)
+
+        pruned = info['pruned']
+        if self.out: print("    Pruned? {}".format(pruned), file=self.out)
+
+        if pruned:
+            prune = info['pruneheight']
+            if self.out: print("    Pruned at block: {}".format(prune), file=self.out)
+
+        if self.out: print(file=self.out)
+        if self.out: print('ORBIT node database', file=self.out)
+
+        last = self.tokens.get_last_block()
+        if self.out: print('    Last block sync: {}'.format(last), file=self.out)
+
+        if not last:
+            last = self.api.launched - 1
+
+        diff = completed - last
+        if self.out: print('    Blocks to sync: {}'.format(diff), file=self.out)
+
     def _chunks(self, data, size):
         for i in range(0, len(data), size):
             yield data[i:i+size]
 
     def next(self):
+        if not self.info:
+            self.refresh()
+
         if self.last is None:
             cur = self.api.launched
         else:
             cur = self.last + 1
 
         if cur > self.info['blocks']:
-            print('No more blocks')
+            if self.out: print('No more blocks', file=self.out)
             return None
 
-        print('processing block number {}'.format(cur))
+        if self.out: print('processing block number {}'.format(cur), file=self.out)
 
         # FIXME check confirmations?
 
@@ -77,7 +121,7 @@ class Process():
         block = self.rpc.getblock(blockhash)
 
         txcount = len(block['tx'])
-        print('    {} transaction{}...'.format(txcount, '' if txcount == 1 else 's'), end='', flush=True)
+        if self.out: print('    {} transaction{}...'.format(txcount, '' if txcount == 1 else 's'), end='', flush=True, file=self.out)
 
         # break into batches of 1,000
         txs = []
@@ -92,16 +136,16 @@ class Process():
                 txs.extend(self.rpc.batch_([ [ "getrawtransaction", txhash, True ] for txhash in txbatch ]))
 
             txcount += len(txbatch)
-            print('{}...'.format(txcount), end='', flush=True)
+            if self.out: print('{}...'.format(txcount), end='', flush=True, file=self.out)
 
-        print('validating...')
+        if self.out: print('validating...', file=self.out)
         blockrow = self.tokens.save_block(blockhash, cur)
 
         registrations = self.tokens.get_active_registrations_map(blockrow)
 
         for tx in txs:
             #if i % 5000 == 0:
-            #    print('{}...'.format(i), end='', flush=True)
+            #    if self.out: print('{}...'.format(i), end='', flush=True, file=self.out)
 
             txrow = None
             payments = []
@@ -116,12 +160,12 @@ class Process():
                         orbit = self.api.parse(bytearray.fromhex(asmhex[4:])) # we skip the next byte too (pushdata)
 
                     except ValueError as e:
-                        print("        VOID {}: {}".format(tx['txid'], e))
+                        if self.out: print("        VOID {}: {}".format(tx['txid'], e), file=self.out)
 
                     if orbit is not None:
-                        print("        ORBIT @ {}".format(tx['txid']))
-                        print("            Token Address: {}".format(orbit[0]))
-                        print("            {}".format(orbit[1]))
+                        if self.out: print("        ORBIT @ {}".format(tx['txid']), file=self.out)
+                        if self.out: print("            Token Address: {}".format(orbit[0]), file=self.out)
+                        if self.out: print("            {}".format(orbit[1]), file=self.out)
 
                         if txrow is None:
                             txrow = self.save_tx_row(tx, blockrow)
@@ -131,7 +175,7 @@ class Process():
 
                         except TokenError as e:
                             # note that we don't rollback the sql transaction; we might want to re-evaluate the data later
-                            print("         !--VOIDED: {}".format(e))
+                            if self.out: print("         !--VOIDED: {}".format(e), file=self.out)
 
                 elif value:
                     addresses = vout['scriptPubKey']['addresses']
@@ -160,7 +204,7 @@ class Process():
         self.tokens.process_advertisements(blockrow)
 
         orbit = self.tokens.hash(blockrow)
-        print('    -> {}'.format(orbit))
+        if self.out: print('    -> {}'.format(orbit), file=self.out)
 
         self.tokens.set_last_block(cur)
         self.tokens.commit()

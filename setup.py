@@ -31,9 +31,10 @@ NAME    = 'node'                        # should match source package name in NS
 COMMAND = 'orbit-node'                  # command name may be different than package name
 REQUIRE = [                             # package dependencies
             #'ag.logging'
-            'ag.orbit(>=0.6,<1)',
+            'ag.orbit(>=0.7,<1)',
             'appdirs',
-            'python-bitcoinrpc'
+            'python-bitcoinrpc',
+            'flask'
           ]
 DESC    = 'Validating node for ORBIT (Bitcoin Cash tokens)'
 TAGS    = 'utilities'                   # space-separated list of keywords
@@ -121,6 +122,7 @@ if __name__ == '__main__':
         url=URL,
         classifiers=CLASS,
         keywords=TAGS,
+        scripts=([ COMMAND ] if COMMAND else None),
 
         # run-time dependencies
         install_requires=REQUIRE,
