@@ -1,6 +1,8 @@
 Copyright (C) 2018 Alpha Griffin
 @%@~LICENSE~@%@
 
+saw_081218_1 - Minor updates to documentation and requirements.
+
 saw_081018_1 - Add continuous daemon operation and web API.
 
 saw_080718_1 - Add support for token crowd-sale/faucet advertisements and registrations (TESTING

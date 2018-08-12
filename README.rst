@@ -85,6 +85,7 @@ Dependencies
 - Python 3
 - ORBIT API: https://github.com/AlphaGriffin/orbit (``pip install git+https://github.com/AlphaGriffin/orbit``)
 - appdirs: https://github.com/ActiveState/appdirs (``pip install appdirs``)
+- BitCash >= 0.5.2.4: https://github.com/sporestack/bitcash (``pip install bitcash\>=0.5.2.4``)
 - python-bitcoinrpc: https://github.com/jgarzik/python-bitcoinrpc (``pip install python-bitcoinrpc``)
 - Flask (``pip install flask``)
 - *For building documentation (optional):* sphinx and sphinx_rtd_theme (``pip install sphinx sphinx_rtd_theme``)
